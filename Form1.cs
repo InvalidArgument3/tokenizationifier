@@ -302,5 +302,47 @@ namespace tokenizationifier
         {
             openOutputButton.Enabled = File.Exists(Path.Combine(outputDirectory, outputFileName));
         }
+
+        private void clipboardButton_Click(object sender, EventArgs e)
+        {
+            //copy the text in the output file to clipboard, if it exists
+            string outputPath = Path.Combine(outputDirectory, outputFileName);
+            if (File.Exists(outputPath))
+            {
+                try
+                {
+                    string text = File.ReadAllText(outputPath);
+                    Clipboard.SetText(text);
+                    Log("Output file copied to clipboard.");
+                }
+                catch (Exception ex)
+                {
+                    Log($"Error copying output file to clipboard: {ex.Message}");
+                }
+            }
+            else
+            {
+                Log("Output file does not exist. Cannot copy to clipboard.");
+            }
+        }
+
+        private void GithubLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            try
+            {
+                // Use ProcessStartInfo to open the URL in the default browser
+                System.Diagnostics.ProcessStartInfo psi = new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = "https://github.com/InvalidArgument3/tokenizationifier",
+                    UseShellExecute = true // Ensures the URL opens in the default browser
+                };
+                System.Diagnostics.Process.Start(psi);
+            }
+            catch (Exception ex)
+            {
+                // Handle any errors (e.g., no default browser set)
+                MessageBox.Show($"Error opening link: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
     }
 }

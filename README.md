@@ -1,1 +1,1 @@
-thinky to compact scripts for pasting
+thingy to compact scripts for pasting
