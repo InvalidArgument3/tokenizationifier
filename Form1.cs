@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace tokenizationifier
@@ -24,6 +25,11 @@ namespace tokenizationifier
             outputDirectory = Application.StartupPath; // Default to app directory
             UpdateFileList();
             UpdateOpenOutputButton();
+            // Initialize mode selection
+            modeComboBox.Items.AddRange(new[] { "CSMin (Package)", "Basic Whitespace Remover" });
+            modeComboBox.SelectedIndex = 0; // Default to CSMin
+            // Set minimum size for the form to prevent controls from overlapping
+            this.MinimumSize = new Size(600, 450);
         }
 
         private void SetupDragDrop()
@@ -133,8 +139,8 @@ namespace tokenizationifier
             Log($"Concatenation completed. Total files processed: {fileCount}");
             Log(errors > 0 ? $"There were {errors} errors during concatenation." : "No errors during concatenation.");
 
-            // Minify
-            Log("Minifying concatenated file...");
+            // Minify based on selected mode
+            Log($"Minifying concatenated file using {modeComboBox.SelectedItem}...");
             if (MinifyFile(finalOutput))
             {
                 Log($"Minification completed successfully. Output saved to: {finalOutput}");
@@ -180,29 +186,40 @@ namespace tokenizationifier
         {
             try
             {
-                ProcessStartInfo psi = new ProcessStartInfo
+                if (modeComboBox.SelectedItem.ToString() == "CSMin (DotNet Package)")
                 {
-                    FileName = "csmin.exe",
-                    Arguments = "",
-                    RedirectStandardInput = true,
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
+                    // Existing CSMin logic
+                    ProcessStartInfo psi = new ProcessStartInfo
+                    {
+                        FileName = "csmin.exe",
+                        Arguments = "",
+                        RedirectStandardInput = true,
+                        RedirectStandardOutput = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    };
 
-                using (Process process = new Process { StartInfo = psi })
+                    using (Process process = new Process { StartInfo = psi })
+                    {
+                        process.Start();
+                        using (StreamWriter sw = process.StandardInput)
+                        {
+                            sw.Write(File.ReadAllText(tempOutput));
+                        }
+                        using (StreamReader sr = process.StandardOutput)
+                        {
+                            File.WriteAllText(outputPath, sr.ReadToEnd(), Encoding.UTF8);
+                        }
+                        process.WaitForExit();
+                        return process.ExitCode == 0;
+                    }
+                }
+                else // Basic Whitespace Remover
                 {
-                    process.Start();
-                    using (StreamWriter sw = process.StandardInput)
-                    {
-                        sw.Write(File.ReadAllText(tempOutput));
-                    }
-                    using (StreamReader sr = process.StandardOutput)
-                    {
-                        File.WriteAllText(outputPath, sr.ReadToEnd(), Encoding.UTF8);
-                    }
-                    process.WaitForExit();
-                    return process.ExitCode == 0;
+                    string content = File.ReadAllText(tempOutput, Encoding.UTF8);
+                    string minified = RemoveWhitespace(content);
+                    File.WriteAllText(outputPath, minified, Encoding.UTF8);
+                    return true;
                 }
             }
             catch (Exception ex)
@@ -210,6 +227,19 @@ namespace tokenizationifier
                 Log($"Minification error: {ex.Message}");
                 return false;
             }
+        }
+
+        private string RemoveWhitespace(string input)
+        {
+            // Remove leading/trailing whitespace, multiple spaces, and unnecessary newlines
+            string result = input;
+            // Replace multiple spaces/tabs with single space
+            result = Regex.Replace(result, @"\s+", " ");
+            // Remove leading/trailing whitespace per line
+            result = string.Join(" ", result.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).Select(line => line.Trim()));
+            // Remove spaces around common delimiters (optional, adjust as needed)
+            result = Regex.Replace(result, @"\s*([{}()[\];,])\s*", "$1");
+            return result.Trim();
         }
 
         private string ChooseOutputDirectory()
@@ -305,7 +335,6 @@ namespace tokenizationifier
 
         private void clipboardButton_Click(object sender, EventArgs e)
         {
-            //copy the text in the output file to clipboard, if it exists
             string outputPath = Path.Combine(outputDirectory, outputFileName);
             if (File.Exists(outputPath))
             {
@@ -326,21 +355,55 @@ namespace tokenizationifier
             }
         }
 
+        private void tokenCountButton_Click(object sender, EventArgs e)
+        {
+            string filePath = Path.Combine(outputDirectory, outputFileName);
+            if (!File.Exists(filePath))
+            {
+                filePath = tempOutput; // Fallback to temp file if output doesn't exist
+            }
+
+            if (File.Exists(filePath))
+            {
+                try
+                {
+                    string content = File.ReadAllText(filePath, Encoding.UTF8);
+                    int tokenCount = CountTokens(content);
+                    Log($"Token count: {tokenCount}");
+                }
+                catch (Exception ex)
+                {
+                    Log($"Error counting tokens: {ex.Message}");
+                }
+            }
+            else
+            {
+                Log("No output or temporary file exists to count tokens.");
+            }
+        }
+
+        private int CountTokens(string content)
+        {
+            // Split by whitespace and common delimiters, count non-empty tokens
+            var tokens = Regex.Split(content, @"\s+|[.,;(){}[\]]")
+                             .Where(t => !string.IsNullOrWhiteSpace(t))
+                             .ToList();
+            return tokens.Count;
+        }
+
         private void GithubLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             try
             {
-                // Use ProcessStartInfo to open the URL in the default browser
-                System.Diagnostics.ProcessStartInfo psi = new System.Diagnostics.ProcessStartInfo
+                ProcessStartInfo psi = new ProcessStartInfo
                 {
                     FileName = "https://github.com/InvalidArgument3/tokenizationifier",
-                    UseShellExecute = true // Ensures the URL opens in the default browser
+                    UseShellExecute = true
                 };
-                System.Diagnostics.Process.Start(psi);
+                Process.Start(psi);
             }
             catch (Exception ex)
             {
-                // Handle any errors (e.g., no default browser set)
                 MessageBox.Show($"Error opening link: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }

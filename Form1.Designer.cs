@@ -15,130 +15,207 @@
 
         private void InitializeComponent()
         {
-            textBox1 = new TextBox();
+            mainTableLayoutPanel = new TableLayoutPanel();
+            headerPanel = new Panel();
             label1 = new Label();
+            GithubLabel = new LinkLabel();
+            textBox1 = new TextBox();
+            buttonTableLayoutPanel = new TableLayoutPanel();
             resetButton = new Button();
             addFilesButton = new Button();
             minifyButton = new Button();
-            openOutputButton = new Button();
-            changeDirButton = new Button();
             clipboardButton = new Button();
-            GithubLabel = new LinkLabel();
+            modeComboBox = new ComboBox();
+            changeDirButton = new Button();
+            openOutputButton = new Button();
+            tokenCountButton = new Button();
+            mainTableLayoutPanel.SuspendLayout();
+            headerPanel.SuspendLayout();
+            buttonTableLayoutPanel.SuspendLayout();
             SuspendLayout();
+            // 
+            // mainTableLayoutPanel
+            // 
+            mainTableLayoutPanel.ColumnCount = 1;
+            mainTableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            mainTableLayoutPanel.Controls.Add(headerPanel, 0, 0);
+            mainTableLayoutPanel.Controls.Add(textBox1, 0, 1);
+            mainTableLayoutPanel.Controls.Add(buttonTableLayoutPanel, 0, 2);
+            mainTableLayoutPanel.Dock = DockStyle.Fill;
+            mainTableLayoutPanel.Location = new Point(0, 0);
+            mainTableLayoutPanel.Name = "mainTableLayoutPanel";
+            mainTableLayoutPanel.RowCount = 3;
+            mainTableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            mainTableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            mainTableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 70F));
+            mainTableLayoutPanel.Size = new Size(565, 417);
+            mainTableLayoutPanel.TabIndex = 0;
+            // 
+            // headerPanel
+            // 
+            headerPanel.Controls.Add(label1);
+            headerPanel.Controls.Add(GithubLabel);
+            headerPanel.Dock = DockStyle.Fill;
+            headerPanel.Location = new Point(3, 3);
+            headerPanel.Name = "headerPanel";
+            headerPanel.Size = new Size(559, 24);
+            headerPanel.TabIndex = 0;
+            // 
+            // label1
+            // 
+            label1.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+            label1.Location = new Point(0, 0);
+            label1.Name = "label1";
+            label1.Size = new Size(500, 23);
+            label1.TabIndex = 0;
+            label1.Text = "Select mode, add files, minify, count tokens, or change output directory.";
+            // 
+            // GithubLabel
+            // 
+            GithubLabel.Anchor = AnchorStyles.Right;
+            GithubLabel.AutoSize = true;
+            GithubLabel.Location = new Point(500, 5);
+            GithubLabel.Name = "GithubLabel";
+            GithubLabel.Size = new Size(43, 15);
+            GithubLabel.TabIndex = 1;
+            GithubLabel.TabStop = true;
+            GithubLabel.Text = "Github";
+            GithubLabel.LinkClicked += GithubLabel_LinkClicked;
             // 
             // textBox1
             // 
-            textBox1.Location = new Point(14, 46);
-            textBox1.Margin = new Padding(4, 3, 4, 3);
+            textBox1.Dock = DockStyle.Fill;
+            textBox1.Location = new Point(3, 33);
             textBox1.Multiline = true;
             textBox1.Name = "textBox1";
             textBox1.ReadOnly = true;
             textBox1.ScrollBars = ScrollBars.Vertical;
-            textBox1.Size = new Size(536, 288);
-            textBox1.TabIndex = 5;
+            textBox1.Size = new Size(559, 311);
+            textBox1.TabIndex = 1;
             // 
-            // label1
+            // buttonTableLayoutPanel
             // 
-            label1.Location = new Point(14, 12);
-            label1.Margin = new Padding(4, 0, 4, 0);
-            label1.Name = "label1";
-            label1.Size = new Size(537, 23);
-            label1.TabIndex = 6;
-            label1.Text = "Add files, minify, open output, or change output directory.";
+            buttonTableLayoutPanel.ColumnCount = 5;
+            buttonTableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20F));
+            buttonTableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20F));
+            buttonTableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20F));
+            buttonTableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20F));
+            buttonTableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20F));
+            buttonTableLayoutPanel.Controls.Add(resetButton, 0, 0);
+            buttonTableLayoutPanel.Controls.Add(addFilesButton, 1, 0);
+            buttonTableLayoutPanel.Controls.Add(minifyButton, 2, 0);
+            buttonTableLayoutPanel.Controls.Add(clipboardButton, 3, 0);
+            buttonTableLayoutPanel.Controls.Add(modeComboBox, 4, 0);
+            buttonTableLayoutPanel.Controls.Add(changeDirButton, 0, 1);
+            buttonTableLayoutPanel.Controls.Add(openOutputButton, 3, 1);
+            buttonTableLayoutPanel.Controls.Add(tokenCountButton, 4, 1);
+            buttonTableLayoutPanel.Dock = DockStyle.Fill;
+            buttonTableLayoutPanel.Location = new Point(3, 350);
+            buttonTableLayoutPanel.Name = "buttonTableLayoutPanel";
+            buttonTableLayoutPanel.RowCount = 2;
+            buttonTableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            buttonTableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            buttonTableLayoutPanel.Size = new Size(559, 64);
+            buttonTableLayoutPanel.TabIndex = 2;
             // 
             // resetButton
             // 
-            resetButton.Location = new Point(14, 346);
-            resetButton.Margin = new Padding(4, 3, 4, 3);
+            resetButton.Dock = DockStyle.Fill;
+            resetButton.Location = new Point(3, 3);
             resetButton.Name = "resetButton";
-            resetButton.Size = new Size(93, 27);
-            resetButton.TabIndex = 4;
+            resetButton.Size = new Size(105, 26);
+            resetButton.TabIndex = 0;
             resetButton.Text = "Reset";
             resetButton.Click += ResetButton_Click;
             // 
             // addFilesButton
             // 
-            addFilesButton.Location = new Point(114, 346);
-            addFilesButton.Margin = new Padding(4, 3, 4, 3);
+            addFilesButton.Dock = DockStyle.Fill;
+            addFilesButton.Location = new Point(114, 3);
             addFilesButton.Name = "addFilesButton";
-            addFilesButton.Size = new Size(93, 27);
-            addFilesButton.TabIndex = 3;
+            addFilesButton.Size = new Size(105, 26);
+            addFilesButton.TabIndex = 1;
             addFilesButton.Text = "Add Files";
             addFilesButton.Click += AddFilesButton_Click;
             // 
             // minifyButton
             // 
-            minifyButton.Location = new Point(215, 346);
-            minifyButton.Margin = new Padding(4, 3, 4, 3);
+            minifyButton.Dock = DockStyle.Fill;
+            minifyButton.Location = new Point(225, 3);
             minifyButton.Name = "minifyButton";
-            minifyButton.Size = new Size(93, 27);
+            minifyButton.Size = new Size(105, 26);
             minifyButton.TabIndex = 2;
             minifyButton.Text = "Minify";
             minifyButton.Click += MinifyButton_Click;
             // 
-            // openOutputButton
-            // 
-            openOutputButton.Location = new Point(316, 379);
-            openOutputButton.Margin = new Padding(4, 3, 4, 3);
-            openOutputButton.Name = "openOutputButton";
-            openOutputButton.Size = new Size(93, 27);
-            openOutputButton.TabIndex = 1;
-            openOutputButton.Text = "Open Output";
-            openOutputButton.Click += OpenOutputButton_Click;
-            // 
-            // changeDirButton
-            // 
-            changeDirButton.Location = new Point(14, 379);
-            changeDirButton.Margin = new Padding(4, 3, 4, 3);
-            changeDirButton.Name = "changeDirButton";
-            changeDirButton.Size = new Size(93, 27);
-            changeDirButton.TabIndex = 0;
-            changeDirButton.Text = "Change Dir";
-            changeDirButton.Click += ChangeDirButton_Click;
-            // 
             // clipboardButton
             // 
+            clipboardButton.Dock = DockStyle.Fill;
             clipboardButton.Font = new Font("Segoe UI", 8.25F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            clipboardButton.Location = new Point(316, 346);
-            clipboardButton.Margin = new Padding(4, 3, 4, 3);
+            clipboardButton.Location = new Point(336, 3);
             clipboardButton.Name = "clipboardButton";
-            clipboardButton.Size = new Size(93, 27);
-            clipboardButton.TabIndex = 7;
+            clipboardButton.Size = new Size(105, 26);
+            clipboardButton.TabIndex = 3;
             clipboardButton.Text = "Copy Output";
             clipboardButton.Click += clipboardButton_Click;
             // 
-            // GithubLabel
+            // modeComboBox
             // 
-            GithubLabel.AutoSize = true;
-            GithubLabel.Location = new Point(507, 12);
-            GithubLabel.Name = "GithubLabel";
-            GithubLabel.Size = new Size(43, 15);
-            GithubLabel.TabIndex = 8;
-            GithubLabel.TabStop = true;
-            GithubLabel.Text = "Github";
-            GithubLabel.LinkClicked += GithubLabel_LinkClicked;
+            modeComboBox.Dock = DockStyle.Fill;
+            modeComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
+            modeComboBox.Location = new Point(447, 3);
+            modeComboBox.Name = "modeComboBox";
+            modeComboBox.Size = new Size(109, 23);
+            modeComboBox.TabIndex = 4;
+            // 
+            // changeDirButton
+            // 
+            changeDirButton.Dock = DockStyle.Fill;
+            changeDirButton.Location = new Point(3, 35);
+            changeDirButton.Name = "changeDirButton";
+            changeDirButton.Size = new Size(105, 26);
+            changeDirButton.TabIndex = 5;
+            changeDirButton.Text = "Change Dir";
+            changeDirButton.Click += ChangeDirButton_Click;
+            // 
+            // openOutputButton
+            // 
+            openOutputButton.Dock = DockStyle.Fill;
+            openOutputButton.Location = new Point(336, 35);
+            openOutputButton.Name = "openOutputButton";
+            openOutputButton.Size = new Size(105, 26);
+            openOutputButton.TabIndex = 6;
+            openOutputButton.Text = "Open Output";
+            openOutputButton.Click += OpenOutputButton_Click;
+            // 
+            // tokenCountButton
+            // 
+            tokenCountButton.Dock = DockStyle.Fill;
+            tokenCountButton.Location = new Point(447, 35);
+            tokenCountButton.Name = "tokenCountButton";
+            tokenCountButton.Size = new Size(109, 26);
+            tokenCountButton.TabIndex = 7;
+            tokenCountButton.Text = "Count Tokens";
+            tokenCountButton.Click += tokenCountButton_Click;
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(565, 417);
-            Controls.Add(GithubLabel);
-            Controls.Add(clipboardButton);
-            Controls.Add(changeDirButton);
-            Controls.Add(openOutputButton);
-            Controls.Add(minifyButton);
-            Controls.Add(addFilesButton);
-            Controls.Add(resetButton);
-            Controls.Add(textBox1);
-            Controls.Add(label1);
-            Margin = new Padding(4, 3, 4, 3);
+            Controls.Add(mainTableLayoutPanel);
             Name = "Form1";
             Text = "Tokenizationifier";
+            mainTableLayoutPanel.ResumeLayout(false);
+            mainTableLayoutPanel.PerformLayout();
+            headerPanel.ResumeLayout(false);
+            headerPanel.PerformLayout();
+            buttonTableLayoutPanel.ResumeLayout(false);
             ResumeLayout(false);
-            PerformLayout();
         }
 
+        private TableLayoutPanel mainTableLayoutPanel;
+        private Panel headerPanel;
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button resetButton;
@@ -148,5 +225,8 @@
         private System.Windows.Forms.Button changeDirButton;
         private Button clipboardButton;
         private LinkLabel GithubLabel;
+        private ComboBox modeComboBox;
+        private Button tokenCountButton;
+        private TableLayoutPanel buttonTableLayoutPanel;
     }
 }
