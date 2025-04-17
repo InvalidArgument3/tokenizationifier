@@ -16,6 +16,7 @@ namespace tokenizationifier
         private string outputDirectory;
         private int fileCount = 0;
         private int errors = 0;
+        private int totalBucketTokens = 0; // Persistent total token count
         private readonly List<string> fileBucket = new List<string>();
 
         public Form1()
@@ -77,11 +78,12 @@ namespace tokenizationifier
             if (fileBucket.Count == 0)
             {
                 Log("No files in bucket. Add files to minify.");
+                totalBucketTokens = 0;
                 return;
             }
 
             Log($"Files in bucket ({fileBucket.Count}):");
-            int totalTokens = 0;
+            totalBucketTokens = 0;
 
             foreach (var file in fileBucket)
             {
@@ -89,7 +91,7 @@ namespace tokenizationifier
                 {
                     string content = File.ReadAllText(file, Encoding.UTF8);
                     int tokenCount = CountTokens(content);
-                    totalTokens += tokenCount;
+                    totalBucketTokens += tokenCount;
                     Log($" - {file} ({tokenCount} tokens)");
                 }
                 catch (Exception ex)
@@ -98,7 +100,7 @@ namespace tokenizationifier
                 }
             }
 
-            Log($"Total tokens in bucket: {totalTokens}");
+            Log($"Total tokens in bucket: {totalBucketTokens}");
         }
 
         private void ProcessFiles()
@@ -156,7 +158,11 @@ namespace tokenizationifier
                 {
                     string minifiedContent = File.ReadAllText(finalOutput, Encoding.UTF8);
                     int tokenCount = CountTokens(minifiedContent);
-                    Log($"Tokens after minification: {tokenCount}");
+                    int tokensSaved = totalBucketTokens - tokenCount;
+                    string reduction = totalBucketTokens > 0
+                        ? $" ({(tokensSaved / (double)totalBucketTokens * 100):F2}% reduction)"
+                        : " (0.00% reduction)";
+                    Log($"Token summary: Original={totalBucketTokens}, After minification={tokenCount}, Saved={tokensSaved}{reduction}");
                 }
                 catch (Exception ex)
                 {
@@ -247,19 +253,11 @@ namespace tokenizationifier
 
         private string RemoveWhitespace(string input)
         {
-            // Remove single-line comments
             string result = Regex.Replace(input, @"//.*?$", "", RegexOptions.Multiline);
-
-            // Remove multi-line comments
             result = Regex.Replace(result, @"/\*.*?\*/", "", RegexOptions.Singleline);
-
-            // Remove leading/trailing whitespace, multiple spaces, and unnecessary newlines
             result = Regex.Replace(result, @"\s+", " ");
             result = string.Join(" ", result.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).Select(line => line.Trim()));
-
-            // Remove spaces around common delimiters
             result = Regex.Replace(result, @"\s*([{}()[\];,])\s*", "$1");
-
             return result.Trim();
         }
 
@@ -282,6 +280,7 @@ namespace tokenizationifier
             fileBucket.Clear();
             fileCount = 0;
             errors = 0;
+            totalBucketTokens = 0;
             TryDeleteFile(tempOutput, "Deleting temporary file...");
             TryDeleteFile(Path.Combine(outputDirectory, outputFileName), "Deleting output file...");
             UpdateFileList();
@@ -405,11 +404,8 @@ namespace tokenizationifier
 
         private int CountTokens(string content)
         {
-            // Remove comments first to avoid counting them
             content = Regex.Replace(content, @"//.*?$", "", RegexOptions.Multiline);
             content = Regex.Replace(content, @"/\*.*?\*/", "", RegexOptions.Singleline);
-
-            // Split by whitespace and common delimiters, count non-empty tokens
             var tokens = Regex.Split(content, @"\s+|[.,;(){}[\]]")
                              .Where(t => !string.IsNullOrWhiteSpace(t))
                              .ToList();
