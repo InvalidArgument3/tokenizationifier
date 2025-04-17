@@ -13,7 +13,7 @@ namespace tokenizationifier
     {
         private readonly string tempOutput = "temp_concatenated.txt";
         private readonly string outputFileName = "minified_output.txt";
-        private string outputDirectory; // Set initially or via Change Directory
+        private string outputDirectory;
         private int fileCount = 0;
         private int errors = 0;
         private readonly List<string> fileBucket = new List<string>();
@@ -22,13 +22,11 @@ namespace tokenizationifier
         {
             InitializeComponent();
             SetupDragDrop();
-            outputDirectory = Application.StartupPath; // Default to app directory
+            outputDirectory = Application.StartupPath;
             UpdateFileList();
             UpdateOpenOutputButton();
-            // Initialize mode selection
             modeComboBox.Items.AddRange(new[] { "CSMin (Package)", "Basic Whitespace Remover" });
-            modeComboBox.SelectedIndex = 0; // Default to CSMin
-            // Set minimum size for the form to prevent controls from overlapping
+            modeComboBox.SelectedIndex = 0;
             this.MinimumSize = new Size(600, 450);
         }
 
@@ -75,18 +73,32 @@ namespace tokenizationifier
         {
             textBox1.Clear();
             Log($"Output directory: {outputDirectory}");
+
             if (fileBucket.Count == 0)
             {
                 Log("No files in bucket. Add files to minify.");
+                return;
             }
-            else
+
+            Log($"Files in bucket ({fileBucket.Count}):");
+            int totalTokens = 0;
+
+            foreach (var file in fileBucket)
             {
-                Log($"Files in bucket ({fileBucket.Count}):");
-                foreach (var file in fileBucket)
+                try
                 {
-                    Log($" - {file}");
+                    string content = File.ReadAllText(file, Encoding.UTF8);
+                    int tokenCount = CountTokens(content);
+                    totalTokens += tokenCount;
+                    Log($" - {file} ({tokenCount} tokens)");
+                }
+                catch (Exception ex)
+                {
+                    Log($" - {file} (Error reading file: {ex.Message})");
                 }
             }
+
+            Log($"Total tokens in bucket: {totalTokens}");
         }
 
         private void ProcessFiles()
@@ -102,7 +114,6 @@ namespace tokenizationifier
                 return;
             }
 
-            // Ensure output directory is set
             if (string.IsNullOrEmpty(outputDirectory))
             {
                 outputDirectory = ChooseOutputDirectory();
@@ -115,11 +126,9 @@ namespace tokenizationifier
 
             string finalOutput = Path.Combine(outputDirectory, outputFileName);
 
-            // Delete existing temp/output files
             TryDeleteFile(tempOutput, "Existing temporary file found. Deleting...");
             TryDeleteFile(finalOutput, "Existing output file found. Deleting...");
 
-            // Concatenate files
             Log("Concatenating files...");
             foreach (var file in fileBucket)
             {
@@ -139,11 +148,20 @@ namespace tokenizationifier
             Log($"Concatenation completed. Total files processed: {fileCount}");
             Log(errors > 0 ? $"There were {errors} errors during concatenation." : "No errors during concatenation.");
 
-            // Minify based on selected mode
             Log($"Minifying concatenated file using {modeComboBox.SelectedItem}...");
             if (MinifyFile(finalOutput))
             {
                 Log($"Minification completed successfully. Output saved to: {finalOutput}");
+                try
+                {
+                    string minifiedContent = File.ReadAllText(finalOutput, Encoding.UTF8);
+                    int tokenCount = CountTokens(minifiedContent);
+                    Log($"Tokens after minification: {tokenCount}");
+                }
+                catch (Exception ex)
+                {
+                    Log($"Error reading minified file for token count: {ex.Message}");
+                }
             }
             else
             {
@@ -151,7 +169,6 @@ namespace tokenizationifier
                 errors++;
             }
 
-            // Clean up
             TryDeleteFile(tempOutput, "Cleaning up temporary file...");
 
             Log("Operation completed.");
@@ -186,9 +203,8 @@ namespace tokenizationifier
         {
             try
             {
-                if (modeComboBox.SelectedItem.ToString() == "CSMin (DotNet Package)")
+                if (modeComboBox.SelectedItem.ToString() == "CSMin (Package)")
                 {
-                    // Existing CSMin logic
                     ProcessStartInfo psi = new ProcessStartInfo
                     {
                         FileName = "csmin.exe",
@@ -214,7 +230,7 @@ namespace tokenizationifier
                         return process.ExitCode == 0;
                     }
                 }
-                else // Basic Whitespace Remover
+                else
                 {
                     string content = File.ReadAllText(tempOutput, Encoding.UTF8);
                     string minified = RemoveWhitespace(content);
@@ -231,14 +247,19 @@ namespace tokenizationifier
 
         private string RemoveWhitespace(string input)
         {
+            // Remove single-line comments
+            string result = Regex.Replace(input, @"//.*?$", "", RegexOptions.Multiline);
+
+            // Remove multi-line comments
+            result = Regex.Replace(result, @"/\*.*?\*/", "", RegexOptions.Singleline);
+
             // Remove leading/trailing whitespace, multiple spaces, and unnecessary newlines
-            string result = input;
-            // Replace multiple spaces/tabs with single space
             result = Regex.Replace(result, @"\s+", " ");
-            // Remove leading/trailing whitespace per line
             result = string.Join(" ", result.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).Select(line => line.Trim()));
-            // Remove spaces around common delimiters (optional, adjust as needed)
+
+            // Remove spaces around common delimiters
             result = Regex.Replace(result, @"\s*([{}()[\];,])\s*", "$1");
+
             return result.Trim();
         }
 
@@ -360,7 +381,7 @@ namespace tokenizationifier
             string filePath = Path.Combine(outputDirectory, outputFileName);
             if (!File.Exists(filePath))
             {
-                filePath = tempOutput; // Fallback to temp file if output doesn't exist
+                filePath = tempOutput;
             }
 
             if (File.Exists(filePath))
@@ -384,6 +405,10 @@ namespace tokenizationifier
 
         private int CountTokens(string content)
         {
+            // Remove comments first to avoid counting them
+            content = Regex.Replace(content, @"//.*?$", "", RegexOptions.Multiline);
+            content = Regex.Replace(content, @"/\*.*?\*/", "", RegexOptions.Singleline);
+
             // Split by whitespace and common delimiters, count non-empty tokens
             var tokens = Regex.Split(content, @"\s+|[.,;(){}[\]]")
                              .Where(t => !string.IsNullOrWhiteSpace(t))
